@@ -87,6 +87,11 @@ def now_str():
     return datetime.now().strftime("%Y-%m-%d %I:%M %p")
 
 
+# Awtomatikong i-initialize ang database kahit gumamit ng Gunicorn sa Render
+with app.app_context():
+    init_db()
+
+
 # ---------------------------------------------------------------------------
 # User model
 # ---------------------------------------------------------------------------
@@ -371,7 +376,6 @@ def update_contact(id):
             db.commit()
             flash("Contact updated.", "success")
             return redirect(url_for("dashboard"))
-        # keep what the user typed if validation failed
         contact = {"id": id, "name": name, "phone": phone, "network": network}
 
     return render_template("update.html", contact=contact, networks=NETWORKS)
@@ -408,5 +412,5 @@ def admin_remove_user(user_id):
 
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    init_db()
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
