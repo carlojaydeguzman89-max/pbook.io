@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>📖 Phone Book Manager Dashboard</h2>
+    <span style="color: var(--text-muted);">Logged in as: <strong style="color: var(--accent-gold);">{{ current_user.username }}</strong> ({{ current_user.role | upper }})</span>
+</div>
+
+{% if current_user.role == 'admin' %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+    <div class="card" style="border-color: var(--accent-gold); text-align: center; padding: 15px;">
+        <h3 style="color: var(--accent-gold); margin-bottom: 5px; font-size: 1.8rem;">{{ stats.total_members }}</h3>
+        <p style="color: var(--text-muted); margin: 0;">Registered Members</p>
+    </div>
+    <div class="card" style="border-color: var(--accent-gold); text-align: center; padding: 15px;">
+        <h3 style="color: var(--accent-gold); margin-bottom: 5px; font-size: 1.8rem;">{{ stats.total_contacts }}</h3>
+        <p style="color: var(--text-muted); margin: 0;">Total Saved Contacts Across System</p>
+    </div>
+</div>
+{% endif %}
+
+{% if current_user.role == 'member' %}
+<div class="card" style="margin-bottom: 25px;">
+    <h3 style="color: var(--accent-gold); margin-bottom: 15px;">➕ Save New Contact</h3>
+    <form method="POST">
+        <input type="hidden" name="action" value="add_contact">
+        <div style="display: grid; grid-template-columns: 2fr 2fr 1.5fr 1fr; gap: 10px; align-items: flex-end;">
+            <div>
+                <label style="color: var(--text-muted); font-size: 0.85rem;">Contact Name</label>
+                <input type="text" name="name" placeholder="e.g. John Doe" required style="margin-top: 4px;">
+            </div>
+            <div>
+                <label style="color: var(--text-muted); font-size: 0.85rem;">Phone Number (11 digits)</label>
+                <input type="text" name="phone" placeholder="e.g. 09171234567" required style="margin-top: 4px;">
+            </div>
+            <div>
+                <label style="color: var(--text-muted); font-size: 0.85rem;">SIM / Telco Network</label>
+                <select name="network" style="margin-top: 4px;">
+                    {% for net in networks %}
+                        <option value="{{ net }}">{{ net }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn" style="height: 42px;">Save</button>
+        </div>
+    </form>
+</div>
+
+<div class="card" style="margin-bottom: 25px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+        <h3 style="color: var(--accent-gold); margin: 0;">📖 My Saved Contacts Directory</h3>
+
+        <form method="GET" style="display: flex; gap: 8px;">
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search name or number..." style="margin: 0; width: 220px; padding: 6px 10px; font-size: 0.85rem;">
+            <button type="submit" class="btn" style="padding: 6px 12px; font-size: 0.85rem;">Search</button>
+            {% if search_query %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-ignore" style="padding: 6px 12px; font-size: 0.85rem; text-decoration: none;">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if contacts %}
+    <table>
+        <thead>
+            <tr>
+                <th>Contact Name</th>
+                <th>Phone Number</th>
+                <th>Network</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in contacts %}
+            <tr>
+                <td><strong>{{ c.name }}</strong></td>
+                <td>{{ c.phone }}</td>
+                <td><span style="background: var(--input-bg); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--card-border); font-size: 0.85rem;">{{ c.network }}</span></td>
+                <td>
+                    <a href="{{ url_for('update_contact', id=c.id) }}" class="btn" style="padding: 4px 8px; font-size: 0.8rem; text-decoration: none;">Edit</a>
+                    <a href="{{ url_for('delete_contact', id=c.id) }}" class="btn btn-danger" style="padding: 4px 8px; font-size: 0.8rem; text-decoration: none;" onclick="return confirm('Delete this contact?');">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p style="color: var(--text-muted); margin-top: 10px;">
+            {% if search_query %}
+                No contacts match your search query "{{ search_query }}".
+            {% else %}
+                No contacts saved in your phone book yet.
+            {% endif %}
+        </p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if current_user.role == 'admin' %}
+<div class="card" style="margin-bottom: 25px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+        <h3 style="color: var(--accent-gold); margin: 0;">👥 Registered Members Directory</h3>
+
+        <form method="GET" style="display: flex; gap: 8px;">
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search member name or number..." style="margin: 0; width: 250px; padding: 6px 10px; font-size: 0.85rem;">
+            <button type="submit" class="btn" style="padding: 6px 12px; font-size: 0.85rem;">Search</button>
+            {% if search_query %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-ignore" style="padding: 6px 12px; font-size: 0.85rem; text-decoration: none;">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if all_members %}
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Mobile Number</th>
+                <th>Network</th>
+                <th>Total Saved Contacts</th>
+                <th>Date / Time Joined</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in all_members %}
+            <tr>
+                <td><strong>{{ m.username }}</strong></td>
+                <td>{{ m.phone if m.phone else 'N/A' }}</td>
+                <td><span style="background: var(--input-bg); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--card-border); font-size: 0.85rem;">{{ m.network if m.network else 'N/A' }}</span></td>
+                <td><span style="color: var(--accent-gold); font-weight: bold;">{{ m.contacts_count }} contact(s)</span></td>
+                <td style="color: var(--text-muted);">{{ m.created_at if m.created_at else 'N/A' }}</td>
+                <td>
+                    <a href="{{ url_for('admin_remove_user', user_id=m.id) }}" class="btn btn-danger" style="padding: 4px 8px; font-size: 0.8rem; text-decoration: none;" onclick="return confirm('Remove this member and wipe all their contacts?');">Remove Member</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p style="color: var(--text-muted); margin-top: 10px;">
+            {% if search_query %}
+                No members match your search query "{{ search_query }}".
+            {% else %}
+                No members registered yet.
+            {% endif %}
+        </p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if current_user.role == 'member' %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+    <div class="card">
+        <h4 style="color: var(--accent-gold); margin-bottom: 10px;">✏️ Update Profile Details</h4>
+        <form method="POST">
+            <input type="hidden" name="action" value="edit_profile">
+            
+            <label style="color: var(--text-muted); font-size: 0.85rem;">Username</label>
+            <input type="text" name="username" value="{{ db_user.username }}" required style="margin: 4px 0 10px 0;">
+
+            <label style="color: var(--text-muted); font-size: 0.85rem;">Mobile Number</label>
+            <input type="text" name="phone" value="{{ db_user.phone if db_user.phone else '' }}" required style="margin: 4px 0 10px 0;">
+
+            <label style="color: var(--text-muted); font-size: 0.85rem;">Telco Network</label>
+            <select name="network" style="margin: 4px 0 12px 0;">
+                {% for net in networks %}
+                    <option value="{{ net }}" {% if db_user.network == net %}selected{% endif %}>{{ net }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn" style="padding: 6px 12px; font-size: 0.85rem; width: 100%;">Save Profile Changes</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h4 style="color: var(--accent-gold); margin-bottom: 10px;">🔒 Change Password</h4>
+        <form method="POST">
+            <input type="hidden" name="action" value="change_password">
+            <input type="password" name="old_password" placeholder="Current Password" required style="margin-bottom: 8px;">
+            
+            <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+                <input type="password" id="dashPass" name="new_password" placeholder="New Password" required style="flex: 1;">
+                <button type="button" onclick="togglePassword('dashPass', this)" class="btn btn-ignore" style="padding: 0 10px; font-size: 0.8rem;">👁️ Show</button>
+            </div>
+
+            <button type="submit" class="btn" style="padding: 6px 12px; font-size: 0.85rem; width: 100%;">Update Password</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function togglePassword(inputId, btn) {
+    const passInput = document.getElementById(inputId);
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        btn.innerText = '🙈 Hide';
+    } else {
+        passInput.type = 'password';
+        btn.innerText = '👁️ Show';
+    }
+}
+</script>
+{% endif %}
+
+{% endblock %}

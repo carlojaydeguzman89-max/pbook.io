@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width: 420px; margin: 30px auto;">
+    <h2 style="color: var(--accent-gold); margin-bottom: 20px; text-align: center;">📝 Create New Account</h2>
+    
+    <form method="POST">
+        <div style="margin-bottom: 12px;">
+            <label style="color: var(--text-muted);">Your Name / Account Name</label>
+            <input type="text" name="username" required placeholder="e.g. Juan Dela Cruz" style="margin-top: 4px;">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+            <label style="color: var(--text-muted);">Mobile Phone Number (11 digits)</label>
+            <input type="text" name="phone" required placeholder="e.g. 09171234567" style="margin-top: 4px;">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+            <label style="color: var(--text-muted);">Philippine SIM / Telco Network</label>
+            <select name="network" style="margin-top: 4px;">
+                {% for net in networks %}
+                    <option value="{{ net }}">{{ net }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="color: var(--text-muted);">Password</label>
+            <div style="display: flex; gap: 6px; margin-top: 4px;">
+                <input type="password" id="regPass" name="password" required placeholder="Choose a password" style="flex: 1;">
+                <button type="button" onclick="togglePassword('regPass', this)" class="btn btn-ignore" style="padding: 0 12px; font-size: 0.9rem;">👁️ Show</button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 1rem;">Register Account</button>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 15px;">
+        <span style="color: var(--text-muted); font-size: 0.9rem;">Already have an account?</span><br>
+        <a href="{{ url_for('login') }}" style="color: var(--accent-gold); font-weight: bold; text-decoration: none; display: inline-block; margin-top: 5px;">Log In Here ➔</a>
+    </div>
+</div>
+
+<script>
+function togglePassword(inputId, btn) {
+    const passInput = document.getElementById(inputId);
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        btn.innerText = '🙈 Hide';
+    } else {
+        passInput.type = 'password';
+        btn.innerText = '👁️ Show';
+    }
+}
+</script>
+{% endblock %}

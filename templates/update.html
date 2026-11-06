@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 20px auto;">
+    <h2 style="color: var(--accent-gold); margin-bottom: 20px;">✏️ Edit Contact</h2>
+    <form method="POST">
+        <div style="margin-bottom: 15px;">
+            <label style="color: var(--text-muted);">Contact Name</label>
+            <input type="text" name="name" value="{{ contact.name }}" required>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label style="color: var(--text-muted);">Phone Number (11 digits)</label>
+            <input type="text" name="phone" value="{{ contact.phone }}" required>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="color: var(--text-muted);">SIM / Network</label>
+            <select name="network">
+                {% for net in networks %}
+                    <option value="{{ net }}" {% if contact.network == net %}selected{% endif %}>{{ net }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn">Update Contact</button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-ignore" style="text-decoration: none; padding: 10px 16px;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
